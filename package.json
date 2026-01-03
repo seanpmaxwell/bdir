@@ -1,0 +1,29 @@
+{
+  "name": "bdir",
+  "version": "1.0.0",
+  "description": "Bi-directional object handler for managing enumerable values and their labels.",
+  "keywords": [
+    "bdir",
+    "bi-directional",
+    "enum",
+    "replacement",
+    "labels",
+    "values",
+    "enumerable"
+  ],
+  "homepage": "https://github.com/seanpmaxwell/bdir#readme",
+  "bugs": {
+    "url": "https://github.com/seanpmaxwell/bdir/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seanpmaxwell/bdir.git"
+  },
+  "license": "MIT",
+  "author": "seanpmaxwell1",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  }
+}
