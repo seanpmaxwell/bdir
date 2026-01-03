@@ -13,20 +13,25 @@ const ERRORS = {
     return `bdir(): duplicate value detected: [key: ${key}, value: ${value}]`;
   },
   LabelNotString(value: string, label: unknown) {
-    return 'bdir(): label for value must be a string: ' + 
-      `[value: ${value}, label: ${String(label)}]`;
+    return (
+      'bdir(): label for value must be a string: ' +
+      `[value: ${value}, label: ${String(label)}]`
+    );
   },
   InvalidEntry(key: string, value: unknown) {
-    return `bdir(): invalid entry ["${key}: ${String(value)}] — ` +
+    return (
+      `bdir(): invalid entry ["${key}: ${String(value)}] — ` +
       'forward keys must be non-numeric strings, ' +
-      'forward values must be numbers, reverse keys must be numeric';
+      'forward values must be numbers, reverse keys must be numeric'
+    );
   },
   ReverseWithoutForward(value: number) {
-    return 'bdir(): all reverse keys must be mentioned in the forward ' +
-      `direction: invalid reverse key: "${String(value)}"`;
+    return (
+      'bdir(): all reverse keys must be mentioned in the forward ' +
+      `direction: invalid reverse key: "${String(value)}"`
+    );
   },
 } as const;
-
 
 /******************************************************************************
                                   Types
@@ -34,22 +39,24 @@ const ERRORS = {
 
 type BasicBdir = Record<string, number | string>;
 
-type BiDirParam<T extends Record<string | number, string | number>> =
-  {
-    [K in keyof T]:
-      K extends `${number}`
-        ? T[K] extends string ? unknown : never
-        : T[K] extends number ? unknown : never
-  }[keyof T] extends never
-    ? never
-    : T;
+type BiDirParam<T extends Record<string | number, string | number>> = {
+  [K in keyof T]: K extends `${number}`
+    ? T[K] extends string
+      ? unknown
+      : never
+    : T[K] extends number
+      ? unknown
+      : never;
+}[keyof T] extends never
+  ? never
+  : T;
 
 type ForwardOf<T> = {
-  [K in keyof T as T[K] extends (`${number}` | number) ? K : never]: T[K];
+  [K in keyof T as T[K] extends `${number}` | number ? K : never]: T[K];
 };
 
 type BdirKeys<T> = {
-  [K in keyof T]: K extends (`${number}` | number) ? never : K
+  [K in keyof T]: K extends `${number}` | number ? never : K;
 }[keyof T];
 
 type BdirValues<T> = T[BdirKeys<T>];
@@ -58,26 +65,14 @@ type LabelsOf<T> = {
   [K in keyof ForwardOf<T>]: string;
 };
 
-type GetRawValue<T> =
-  {
-    [K in keyof T]: T[K];
-  }
-    &
-  {
-    [V in T[keyof T] & number as `${V}`]: string;
-  };
+type GetRawValue<T> = {
+  [K in keyof T]: T[K];
+} & {
+  [V in T[keyof T] & number as `${V}`]: string;
+};
 
 type GetEntries<T> = [keyof T, keyof T[keyof T]][];
 type GetOptions<T> = [string, keyof T[keyof T]][];
-
-const Roles = {
-  Admin: 0,
-  User: 1,
-  0: 'Admin',
-  1: 'User'
-} as const;
-
-type Vals = BdirValues<typeof Roles>;
 
 /******************************************************************************
                               Functions
@@ -105,7 +100,7 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
     keyMap,
     keysArray,
     valuesArray,
-  } = splitDirections(param)
+  } = splitDirections(param);
 
   // Initialize arrays
   const labelsArray = valuesArray.map((v, i) => reverse[v] ?? keysArray[i]);
@@ -117,7 +112,7 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
 
   // Initialze the ".raw" and ".Labels" objects
   const rawValue: Record<string, string | number> = {},
-      labelsMap: Record<string, string> = {};
+    labelsMap: Record<string, string> = {};
   for (let i = 0; i < keysArray.length; i++) {
     const k = keysArray[i],
       v = valuesArray[i],
@@ -130,27 +125,27 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
   // Validator functions
   const isKey = (arg: unknown): arg is Key => {
     return typeof arg === 'string' && keySet.has(arg);
-  }
+  };
   const isValue = (arg: unknown): arg is Value => {
     return typeof arg === 'number' && valueSet.has(arg);
-  }
+  };
   const isLabel = (arg: unknown): arg is string => {
     return typeof arg === 'string' && labelSet.has(arg);
-  }
+  };
 
   // Lookup functions
   const render = (arg: unknown): string => {
     if (!isValue(arg)) return '';
     return labelMap.get(arg as number) ?? '';
-  }
+  };
   const index = (arg: unknown): number => {
     if (!isKey(arg)) return -1;
     return keyMap.get(arg as string) ?? -1;
-  }
+  };
 
   // Return
   return {
-    ...forward as Forward,
+    ...(forward as Forward),
     Labels: labelsMap as LabelsMap,
     render,
     index,
@@ -164,13 +159,13 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
     isValue,
     isLabel,
   };
-};
+}
 
 /**
  * Runtime check to make sure every value is unique
  */
 function splitDirections(param: BasicBdir) {
-  const forward: Record<string, number> = {} as any,
+  const forward: Record<string, number> = {},
     reverse: Record<number, string> = {},
     seenValues = new Set<number>(),
     reverseKeys = new Set<number>(),
