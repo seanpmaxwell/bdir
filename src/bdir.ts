@@ -103,46 +103,46 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
     options,
     labelMap,
     keyMap,
-  } = splitFowardRevserse(param)
+    keysArray,
+    valuesArray,
+  } = splitDirections(param)
 
   // Initialize arrays
-  const keysArr: string[] = Object.keys(forward) as any,
-    valuesArr: number[] = Object.values(forward) as any,
-    labelsArr = valuesArr.map((v, i) => reverse[v] ?? keysArr[i]);
+  const labelsArray = valuesArray.map((v, i) => reverse[v] ?? keysArray[i]);
 
   // Initialize Sets
-  const keySet = new Set<string>(keysArr),
-    valueSet = new Set<number>(valuesArr),
-    labelSet = new Set<string>(labelsArr);
+  const keySet = new Set<string>(keysArray),
+    valueSet = new Set<number>(valuesArray),
+    labelSet = new Set<string>(labelsArray);
 
-  // Initialze the "raw" and "Labels" objects
+  // Initialze the ".raw" and ".Labels" objects
   const rawValue: Record<string, string | number> = {},
       labelsMap: Record<string, string> = {};
-  for (let i = 0; i < keysArr.length; i++) {
-    const k = keysArr[i],
-      v = valuesArr[i],
-      label = labelsArr[i];
+  for (let i = 0; i < keysArray.length; i++) {
+    const k = keysArray[i],
+      v = valuesArray[i],
+      label = labelsArray[i];
     rawValue[k] = v;
     rawValue[v] = label;
     labelsMap[k] = label;
   }
 
-  // Provides checks for certain arrays
+  // Validator functions
   const isKey = (arg: unknown): arg is Key => {
     return typeof arg === 'string' && keySet.has(arg);
-  },
-    isValue = (arg: unknown): arg is Value => {
-      return typeof arg === 'number' && valueSet.has(arg);
-    },
-    isLabel = (arg: unknown): arg is string => {
-      return typeof arg === 'string' && labelSet.has(arg);
-    }
+  }
+  const isValue = (arg: unknown): arg is Value => {
+    return typeof arg === 'number' && valueSet.has(arg);
+  }
+  const isLabel = (arg: unknown): arg is string => {
+    return typeof arg === 'string' && labelSet.has(arg);
+  }
 
+  // Lookup functions
   const render = (arg: unknown): string => {
     if (!isValue(arg)) return '';
     return labelMap.get(arg as number) ?? '';
   }
-
   const index = (arg: unknown): number => {
     if (!isKey(arg)) return -1;
     return keyMap.get(arg as string) ?? -1;
@@ -155,9 +155,9 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
     render,
     index,
     raw: () => ({ ...rawValue }) as RawValue,
-    keys: () => [...keysArr] as Array<keyof Forward>,
-    values: () => [...valuesArr] as Value[],
-    labels: () => [...labelsArr] as string[],
+    keys: () => [...keysArray] as Array<keyof Forward>,
+    values: () => [...valuesArray] as Value[],
+    labels: () => [...labelsArray] as string[],
     entries: () => clone2D(entries) as Entries,
     options: () => clone2D(options) as Options,
     isKey,
@@ -169,7 +169,7 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
 /**
  * Runtime check to make sure every value is unique
  */
-function splitFowardRevserse(param: BasicBdir) {
+function splitDirections(param: BasicBdir) {
   const forward: Record<string, number> = {} as any,
     reverse: Record<number, string> = {},
     seenValues = new Set<number>(),
@@ -177,7 +177,9 @@ function splitFowardRevserse(param: BasicBdir) {
     entries: [string, number][] = [],
     options: [number, string][] = [],
     labelMap = new Map<number, string>(),
-    keyMap = new Map<string, number>();
+    keyMap = new Map<string, number>(),
+    keysArray = [],
+    valuesArray = [];
 
   // ** Interate whole object ** //
   for (const [key, value] of Object.entries(param)) {
@@ -198,8 +200,10 @@ function splitFowardRevserse(param: BasicBdir) {
       forward[key] = value;
       entries.push([key, value]);
       keyMap.set(key, value);
+      keysArray.push(key);
+      valuesArray.push(value);
       continue;
-      // ** Reverse direction ** //
+      // Reverse direction
     } else if (isReverseKey) {
       if (typeof value !== 'string') {
         throw new Error(ERRORS.LabelNotString(key, value));
@@ -223,7 +227,16 @@ function splitFowardRevserse(param: BasicBdir) {
   }
 
   // Return
-  return { forward, reverse, entries, options, labelMap, keyMap };
+  return {
+    forward,
+    reverse,
+    entries,
+    options,
+    labelMap,
+    keyMap,
+    keysArray,
+    valuesArray,
+  };
 }
 
 /**
