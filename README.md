@@ -1,3 +1,16 @@
+# bdir 
+
+[![npm](https://img.shields.io/npm/v/bdir?label=npm&color=0ea5e9)](https://www.npmjs.com/package/bdir)
+[![downloads](https://img.shields.io/npm/dm/bdir?label=downloads&color=38bdf8)](https://www.npmjs.com/package/bdir)
+[![types](https://img.shields.io/npm/types/bdir?label=types&color=22c55e)](https://www.npmjs.com/package/bdir)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/bdir?label=bundle&color=0f172a)](https://bundlephobia.com/package/bdir)
+[![license](https://img.shields.io/npm/l/bdir?label=license&color=334155)](LICENSE)
+
+> A comprehensive collection of TypeScript validator functions and utilities for common compile and runtime checks.
+
+
+
+
 user must manually create entire forward direction, reverse direction only needs to be specified if the user wants to change the label for a value, all values must be unique.
 
 Forward direction is for listing values, reverse direction is for associating a label with a value.

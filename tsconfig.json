@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ES2022",
+    "baseUrl": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "declaration": false
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./test/**/*.ts",
+    "./eslint.config.ts"
+  ]
+}
