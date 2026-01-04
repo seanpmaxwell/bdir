@@ -62,10 +62,10 @@ Forward keys must map to numeric values, and every numeric value that needs a cu
 
 ### Lookup Helpers
 
-- `render(value: number): string` – label for a numeric value; empty string when missing.
-- `renderByKey(key: string): string` – label derived from the key; empty string when missing.
-- `index(key: string): number | -1` – numeric value for a key; `-1` when missing.
-- `reverseIndex(value: number): string` – forward key for a value; empty string when missing.
+- `render(value: unknown): string` – label for a numeric value; empty string when missing.
+- `renderByKey(key: unknown): string` – label derived from the key; empty string when missing.
+- `index(key: unknown): number | -1` – numeric value for a key; `-1` when missing.
+- `reverseIndex(value: unknown): string` – forward key for a value; empty string when missing.
 
 ### Collections
 
