@@ -153,21 +153,21 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
     };
 
   // Lookup functions
-  const render = (value: number): string => {
+  const render = (value: unknown): string => {
       if (!isValue(value)) return '';
-      return valueLabelMap.get(value) ?? '';
+      return valueLabelMap.get(value as number) ?? '';
     },
-    index = (key: string): Value | -1 => {
+    index = (key: unknown): Value | -1 => {
       if (!isKey(key)) return -1;
-      return forward[key] as Value;
+      return forward[key as string] as Value;
     },
-    renderByKey = (key: string): string => {
+    renderByKey = (key: unknown): string => {
       if (!isKey(key)) return '';
-      return valueLabelMap.get(forward[key]) ?? '';
+      return valueLabelMap.get(forward[key as string] as number) ?? '';
     },
-    reverseIndex = (value: number): string => {
+    reverseIndex = (value: unknown): string => {
       if (!isValue(value)) return '';
-      return valueKeyMap.get(value) ?? '';
+      return valueKeyMap.get(value as number) ?? '';
     };
 
   // Return
