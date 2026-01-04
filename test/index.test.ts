@@ -4,10 +4,6 @@ import bdir from '../src';
 
 // ** List of APIs ** //
 
-// isKey
-// isValue
-// isLabel
-
 test('basic runtime validation', () => {
   const Roles = bdir({
     None: 0,
@@ -102,4 +98,89 @@ test('basic runtime validation', () => {
   expect(Roles.isLabel('')).toBeTruthy();
 });
 
-test('Errors', () => {});
+test('test for thrown errors', () => {
+  // ** None numeric key ** //
+  const test1 = () =>
+    bdir({
+      '123': 0,
+      User: 1,
+      Admin: 2,
+      0: '',
+      2: 'Administrator',
+    });
+  expect(() => test1()).toThrowError(
+    `bdir(): forward key "123" must not be numeric`,
+  );
+
+  // ** Non-finite number ** //
+  const test2 = () =>
+    bdir({
+      None: Number.POSITIVE_INFINITY,
+      User: 1,
+      Admin: 2,
+      [Number.POSITIVE_INFINITY]: '',
+      2: 'Administrator',
+    });
+  expect(() => test2()).toThrowError(
+    `bdir(): value must be a finite number: [key: "None", value: "Infinity"]`,
+  );
+
+  // ** Value not unique ** //
+  const test3 = () =>
+    bdir({
+      None: 0,
+      User: 0,
+      Admin: 2,
+      0: '',
+      2: 'Administrator',
+    });
+  expect(() => test3()).toThrowError(
+    `bdir(): duplicate value detected: [key: "User", value: "0"]`,
+  );
+
+  // ** Label not a string ** //
+  const test4 = () =>
+    bdir({
+      None: 0,
+      User: 1,
+      Admin: 2,
+      0: '',
+      1: false as unknown as string,
+      2: 'Administrator',
+    });
+  expect(() => test4()).toThrowError(
+    'bdir(): label for value must be a string: ' +
+      `[value: "1", label: "false"]`,
+  );
+
+  // ** Invalid Entry ** //
+  const test5 = () =>
+    bdir({
+      None: false as unknown as string,
+      User: 1,
+      Admin: 2,
+      0: '',
+      2: 'Administrator',
+    });
+  expect(() => test5()).toThrowError(
+    `bdir(): invalid entry ["None": "false"] — forward keys ` +
+      'must be non-numeric strings, forward values must be numbers, reverse ' +
+      'reverse keys must be numeric',
+  );
+
+  // ** Reverse without forward ** //
+  const test6 = () =>
+    bdir({
+      None: 0,
+      User: 1,
+      Admin: 2,
+      0: '',
+      1: 'User',
+      2: 'Administrator',
+      3: 'foo',
+    });
+  expect(() => test6()).toThrowError(
+    'bdir(): all reverse keys must be mentioned in the forward direction: ' +
+      `invalid reverse key: "3"`,
+  );
+});

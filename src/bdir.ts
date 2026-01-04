@@ -7,22 +7,22 @@ const ERRORS = {
     return `bdir(): forward key "${key}" must not be numeric`;
   },
   ValueNotNumber(key: string, value: number) {
-    return `bdir(): value must be a finite number: [key: ${key}, value: ${value}]`;
+    return `bdir(): value must be a finite number: [key: "${key}", value: "${value}"]`;
   },
   DuplicateValue(key: string, value: number) {
-    return `bdir(): duplicate value detected: [key: ${key}, value: ${value}]`;
+    return `bdir(): duplicate value detected: [key: "${key}", value: "${value}"]`;
   },
   LabelNotString(value: string, label: unknown) {
     return (
       'bdir(): label for value must be a string: ' +
-      `[value: ${value}, label: ${String(label)}]`
+      `[value: "${value}", label: "${String(label)}"]`
     );
   },
   InvalidEntry(key: string, value: unknown) {
     return (
-      `bdir(): invalid entry ["${key}: ${String(value)}] — ` +
-      'forward keys must be non-numeric strings, ' +
-      'forward values must be numbers, reverse keys must be numeric'
+      `bdir(): invalid entry ["${key}": "${String(value)}"] — forward keys ` +
+      'must be non-numeric strings, forward values must be numbers, reverse ' +
+      'reverse keys must be numeric'
     );
   },
   ReverseWithoutForward(value: number) {
@@ -39,6 +39,7 @@ const ERRORS = {
 
 type BasicBdir = Record<string, number | string>;
 
+// pick up here "BiDirParam" is not enforcing properly
 type BiDirParam<T extends Record<string | number, string | number>> = {
   [K in keyof T]: K extends `${number}`
     ? T[K] extends string
