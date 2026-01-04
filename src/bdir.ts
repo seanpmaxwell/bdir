@@ -37,20 +37,32 @@ const ERRORS = {
                                   Types
 ******************************************************************************/
 
-type BasicBdir = Record<string, number | string>;
+// **** Params **** //
 
-// pick up here "BiDirParam" is not enforcing properly
-type BiDirParam<T extends Record<string | number, string | number>> = {
-  [K in keyof T]: K extends `${number}`
+type BasicBdir = Record<string | number, string | number>;
+
+type IsNumericKey<K> = K extends number
+  ? true
+  : K extends `${number}`
+    ? true
+    : false;
+
+type InvalidBiDirKeys<T extends object> = {
+  [K in keyof T]: IsNumericKey<K> extends true
     ? T[K] extends string
-      ? unknown
-      : never
+      ? never
+      : K // reverse: numeric key -> string value
     : T[K] extends number
-      ? unknown
-      : never;
-}[keyof T] extends never
-  ? never
-  : T;
+      ? never
+      : K; // forward: string key  -> number value
+}[keyof T];
+
+type BiDirParam<T extends object> =
+  InvalidBiDirKeys<T> extends never ? T : never;
+
+type AssertBdir<T extends object> = T & BiDirParam<T>;
+
+// *** Returned **** //
 
 type ForwardOf<T> = {
   [K in keyof T as T[K] extends `${number}` | number ? K : never]: T[K];
@@ -72,8 +84,16 @@ type GetRawValue<T> = {
   [V in T[keyof T] & number as `${V}`]: string;
 };
 
-type GetEntries<T> = [keyof T, keyof T[keyof T]][];
-type GetOptions<T> = [string, keyof T[keyof T]][];
+type GetEntries<T> = Array<[BdirKeys<T>, BdirValues<T>]>;
+type GetOptions<T> = Array<[BdirValues<T>, string]>;
+
+// **** Public Utility Types **** //
+
+export type PublicBdirValues<T extends { values: () => readonly unknown[] }> =
+  ReturnType<T['values']>[number];
+
+export type PublicBdirKeys<T extends { keys: () => readonly unknown[] }> =
+  ReturnType<T['keys']>[number];
 
 /******************************************************************************
                               Functions
@@ -82,7 +102,7 @@ type GetOptions<T> = [string, keyof T[keyof T]][];
 /**
  * Default function.
  */
-function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
+function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
   type Forward = ForwardOf<T>;
   type Key = BdirKeys<T>;
   type Value = BdirValues<T>;

@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import bdir from '../src';
+import bdir, { type Bdir, type BdirKeys } from '../src';
 
 // ** List of APIs ** //
 
@@ -102,7 +102,7 @@ test('test for thrown errors', () => {
   // ** None numeric key ** //
   const test1 = () =>
     bdir({
-      '123': 0,
+      ['123' as 'foo']: 0, // type error, key can't be numeric
       User: 1,
       Admin: 2,
       0: '',
@@ -156,7 +156,7 @@ test('test for thrown errors', () => {
   // ** Invalid Entry ** //
   const test5 = () =>
     bdir({
-      None: false as unknown as string,
+      None: false as unknown as number, // type error value must be numeric
       User: 1,
       Admin: 2,
       0: '',
@@ -183,4 +183,26 @@ test('test for thrown errors', () => {
     'bdir(): all reverse keys must be mentioned in the forward direction: ' +
       `invalid reverse key: "3"`,
   );
+});
+
+test.skip('misc type-checking', () => {
+  const Roles = bdir({
+    // None: '0', => type error can't have string string
+    User: 1,
+    Admin: 2,
+    0: '',
+    1: false as unknown as string,
+    2: 'Administrator',
+  });
+
+  const Roles2 = bdir({
+    None: 0,
+    User: 1,
+    Admin: 2,
+    0: '',
+    2: 'Administrator',
+  });
+
+  type Values = Bdir<typeof Roles2>;
+  type Keys = BdirKeys<typeof Roles2>;
 });

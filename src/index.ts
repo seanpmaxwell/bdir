@@ -1,4 +1,5 @@
-export { default } from './bdir.js';
-
-// Bdir<> public utility type to return all values
-// BdirKey<> public to return all keys
+export {
+  type PublicBdirKeys as BdirKeys,
+  type PublicBdirValues as Bdir,
+  default,
+} from './bdir.js';
