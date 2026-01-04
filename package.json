@@ -4,12 +4,14 @@
   "description": "Bi-directional object handler for managing enumerable values and their labels.",
   "keywords": [
     "bdir",
-    "bi-directional",
+    "bidirectional",
     "enum",
-    "replacement",
+    "reverse-lookup",
     "labels",
     "values",
-    "enumerable"
+    "typescript",
+    "utility",
+    "validation"
   ],
   "homepage": "https://github.com/seanpmaxwell/bdir#readme",
   "bugs": {

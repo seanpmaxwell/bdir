@@ -166,7 +166,7 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
   };
   const renderByKey = (key: string): string => {
     if (!isKey(key)) return '';
-    return render(index(key) as number);
+    return valueLabelMap.get(forward[key]) ?? '';
   };
   const reverseIndex = (value: number): string => {
     if (!isValue(value)) return '';
