@@ -24,9 +24,11 @@ yarn add bdir
 import bdir from 'bdir';
 
 const Roles = bdir({
+  // Forward direction [keys, values]
   None: 0,
   User: 1,
   Admin: 2,
+  // Reverse direction [values, labels]
   0: '',
   2: 'Administrator',
 });
