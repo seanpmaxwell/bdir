@@ -74,7 +74,7 @@ Forward keys must map to numeric values, and every numeric value that needs a cu
 - `values(): Array<Bdir<typeof Roles>>` – all numeric values.
 - `labels(): string[]` – label strings in insertion order.
 - `entries(): Array<[key, value]>` – 2D array of forward pairs.
-- `options(): Array<[value, label]>` – convenient tuples for select controls.
+- `options(): Array<[value, label]>` – useful for rendering dropdown selectors in the front-end.
 
 ### Type Guards
 
