@@ -91,24 +91,20 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
   type Options = GetOptions<T>;
 
   // Split forward/reverse
-  const {
-    forward,
-    reverse,
-    entries,
-    options,
-    labelMap,
-    keyMap,
-    keysArray,
-    valuesArray,
-  } = splitDirections(param);
+  const { forward, reverse, entries, valueKeyMap, keysArray, valuesArray } =
+    splitDirections(param);
 
-  // Initialize arrays
-  const labelsArray = valuesArray.map((v, i) => reverse[v] ?? keysArray[i]);
-
-  // Initialize Sets
-  const keySet = new Set<string>(keysArray),
-    valueSet = new Set<number>(valuesArray),
-    labelSet = new Set<string>(labelsArray);
+  // Initialize labels
+  const labelsArray: string[] = [],
+    valueLabelMap = new Map<number, string>(),
+    options: (string | number)[][] = [];
+  for (let i = 0; i < valuesArray.length; i++) {
+    const value = valuesArray[i],
+      label = reverse[value] ?? keysArray[i];
+    labelsArray.push(label);
+    valueLabelMap.set(value, label);
+    options.push([value, label]);
+  }
 
   // Initialze the ".raw" and ".Labels" objects
   const rawValue: Record<string, string | number> = {},
@@ -122,6 +118,11 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
     labelsMap[k] = label;
   }
 
+  // Initialize validator Sets
+  const keySet = new Set<string>(keysArray),
+    valueSet = new Set<number>(valuesArray),
+    labelSet = new Set<string>(labelsArray);
+
   // Validator functions
   const isKey = (arg: unknown): arg is Key => {
     return typeof arg === 'string' && keySet.has(arg);
@@ -134,13 +135,21 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
   };
 
   // Lookup functions
-  const render = (arg: unknown): string => {
-    if (!isValue(arg)) return '';
-    return labelMap.get(arg as number) ?? '';
+  const render = (value: number): string => {
+    if (!isValue(value)) return '';
+    return valueLabelMap.get(value) ?? '';
   };
-  const index = (arg: unknown): number => {
-    if (!isKey(arg)) return -1;
-    return keyMap.get(arg as string) ?? -1;
+  const index = (key: string): Value | -1 => {
+    if (!isKey(key)) return -1;
+    return forward[key] as Value;
+  };
+  const renderByKey = (key: string): string => {
+    if (!isKey(key)) return '';
+    return render(index(key) as number);
+  };
+  const reverseIndex = (value: number): string => {
+    if (!isValue(value)) return '';
+    return valueKeyMap.get(value) ?? '';
   };
 
   // Return
@@ -148,7 +157,9 @@ function bdir<const T extends BasicBdir>(param: BiDirParam<T>) {
     ...(forward as Forward),
     Labels: labelsMap as LabelsMap,
     render,
+    renderByKey,
     index,
+    reverseIndex,
     raw: () => ({ ...rawValue }) as RawValue,
     keys: () => [...keysArray] as Array<keyof Forward>,
     values: () => [...valuesArray] as Value[],
@@ -168,11 +179,9 @@ function splitDirections(param: BasicBdir) {
   const forward: Record<string, number> = {},
     reverse: Record<number, string> = {},
     seenValues = new Set<number>(),
-    reverseKeys = new Set<number>(),
+    reverseKeys = [],
     entries: [string, number][] = [],
-    options: [number, string][] = [],
-    labelMap = new Map<number, string>(),
-    keyMap = new Map<string, number>(),
+    valueKeyMap = new Map<number, string>(),
     keysArray = [],
     valuesArray = [];
 
@@ -193,8 +202,8 @@ function splitDirections(param: BasicBdir) {
       }
       seenValues.add(value);
       forward[key] = value;
+      valueKeyMap.set(value, key);
       entries.push([key, value]);
-      keyMap.set(key, value);
       keysArray.push(key);
       valuesArray.push(value);
       continue;
@@ -205,8 +214,7 @@ function splitDirections(param: BasicBdir) {
       }
       const valueAsKey = Number(key);
       reverse[valueAsKey] = value;
-      options.push([valueAsKey, value]);
-      labelMap.set(valueAsKey, value);
+      reverseKeys.push(valueAsKey);
       continue;
     }
     // Invalid value
@@ -226,12 +234,10 @@ function splitDirections(param: BasicBdir) {
     forward,
     reverse,
     entries,
-    options,
-    labelMap,
-    keyMap,
+    valueKeyMap,
     keysArray,
     valuesArray,
-  };
+  } as const;
 }
 
 /**
