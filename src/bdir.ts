@@ -129,7 +129,8 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
 
   // Initialze the ".raw" and ".Labels" objects
   const rawValue: Record<string, string | number> = {},
-    labelsMap: Record<string, string> = {};
+    labelsMap: Record<string, string> = {},
+    labelSet = new Set<string>();
   for (let i = 0; i < keysArray.length; i++) {
     const k = keysArray[i],
       v = valuesArray[i],
@@ -137,41 +138,37 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
     rawValue[k] = v;
     rawValue[v] = label;
     labelsMap[k] = label;
+    labelSet.add(label);
   }
-
-  // Initialize validator Sets
-  const keySet = new Set<string>(keysArray),
-    valueSet = new Set<number>(valuesArray),
-    labelSet = new Set<string>(labelsArray);
 
   // Validator functions
   const isKey = (arg: unknown): arg is Key => {
-    return typeof arg === 'string' && keySet.has(arg);
-  };
-  const isValue = (arg: unknown): arg is Value => {
-    return typeof arg === 'number' && valueSet.has(arg);
-  };
-  const isLabel = (arg: unknown): arg is string => {
-    return typeof arg === 'string' && labelSet.has(arg);
-  };
+      return typeof arg === 'string' && arg in forward;
+    },
+    isValue = (arg: unknown): arg is Value => {
+      return typeof arg === 'number' && valueKeyMap.has(arg);
+    },
+    isLabel = (arg: unknown): arg is string => {
+      return typeof arg === 'string' && labelSet.has(arg);
+    };
 
   // Lookup functions
   const render = (value: number): string => {
-    if (!isValue(value)) return '';
-    return valueLabelMap.get(value) ?? '';
-  };
-  const index = (key: string): Value | -1 => {
-    if (!isKey(key)) return -1;
-    return forward[key] as Value;
-  };
-  const renderByKey = (key: string): string => {
-    if (!isKey(key)) return '';
-    return valueLabelMap.get(forward[key]) ?? '';
-  };
-  const reverseIndex = (value: number): string => {
-    if (!isValue(value)) return '';
-    return valueKeyMap.get(value) ?? '';
-  };
+      if (!isValue(value)) return '';
+      return valueLabelMap.get(value) ?? '';
+    },
+    index = (key: string): Value | -1 => {
+      if (!isKey(key)) return -1;
+      return forward[key] as Value;
+    },
+    renderByKey = (key: string): string => {
+      if (!isKey(key)) return '';
+      return valueLabelMap.get(forward[key]) ?? '';
+    },
+    reverseIndex = (value: number): string => {
+      if (!isValue(value)) return '';
+      return valueKeyMap.get(value) ?? '';
+    };
 
   // Return
   return {
