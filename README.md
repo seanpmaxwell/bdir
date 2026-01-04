@@ -41,7 +41,7 @@ Roles.index('User'); // 1
 Roles.reverseIndex(2); // "Admin"
 ```
 
-Forward keys must map to numeric values, and every numeric value that needs a custom label can be declared again in the reverse direction (`{ 2: 'Administrator' }`). If a reverse entry is omitted, the forward key is used as the label.
+Forward keys must map to numeric values, and every numeric value that needs a custom label can be declared again in the reverse direction. If a reverse entry is omitted, the forward key is used as the label.
 
 ## Why bdir?
 
