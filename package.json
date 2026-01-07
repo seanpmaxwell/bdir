@@ -1,6 +1,6 @@
 {
   "name": "bdir",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Bi-directional object handler for managing enumerable values and their labels.",
   "keywords": [
     "bdir",
