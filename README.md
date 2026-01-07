@@ -1,4 +1,4 @@
-# bdir – Bidirectional Enumerations for TypeScript ↕️
+# bdir – Bidirectional Lookup Table Utility for TypeScript ↕️
 
 [![npm](https://img.shields.io/npm/v/bdir?label=npm&color=0ea5e9)](https://www.npmjs.com/package/bdir)
 [![downloads](https://img.shields.io/npm/dm/bdir?label=downloads&color=38bdf8)](https://www.npmjs.com/package/bdir)
@@ -6,7 +6,7 @@
 [![bundle size](https://img.shields.io/bundlephobia/minzip/bdir?label=bundle&color=0f172a)](https://bundlephobia.com/package/bdir)
 [![license](https://img.shields.io/npm/l/bdir?label=license&color=334155)](LICENSE)
 
-`bdir` is a lightweight utility for building numeric bi-directional maps with first-class TypeScript support. It lets you declare the complete forward direction (keys → values) just once, and automatically keeps reverse lookups (values → labels), runtime validation helpers, and strongly-typed unions in sync.
+`bdir` is a lightweight utility for building bi-directional lookup tables with first-class TypeScript support. It lets you declare the complete forward direction (keys → values) just once, and automatically keeps reverse lookups (values → labels), runtime validation helpers, and strongly-typed unions in sync.
 
 The package ships ESM + CJS bundles, fully typed declarations, and zero dependencies.
 
