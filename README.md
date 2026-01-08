@@ -9,16 +9,20 @@
 `bdir` is a lightweight utility for building bi-directional lookup tables with first-class TypeScript support. It lets you declare the complete forward direction (keys → values) just once, and automatically keeps reverse lookups (values → labels), runtime validation helpers, and strongly-typed unions in sync.
 
 The package ships ESM + CJS bundles, fully typed declarations, and zero dependencies.
+<br/>
 
-## Installation
+
+## Installation 📦
 
 ```bash
 npm install bdir
 # or
 yarn add bdir
 ```
+<br/>
 
-## Quick Start
+
+## Quick Start ⚡
 
 ```ts
 import bdir from 'bdir';
@@ -42,16 +46,20 @@ Roles.reverseIndex(2); // "Admin"
 ```
 
 Forward keys must map to numeric values, and every numeric value that needs a custom label can be declared again in the reverse direction. If a reverse entry is omitted, the forward key is used as the label.
+<br/>
 
-## Why bdir?
+
+## Why bdir? 🤔
 
 - **Single source of truth** – define the forward direction once and bdir keeps every derived structure aligned.
 - **Union-friendly** – forward keys and values are promoted to compile-time unions for safe discriminated logic.
 - **Runtime helpers** – render, lookup, and validate dynamic inputs without reimplementing guard code.
 - **Typed labels** – `.Labels` exposes readonly label maps tied to the forward keys.
 - **Safety built-in** – duplicate value detection, numeric-only guards, label string validation, and reverse-key checks happen during initialization.
+<br/>
 
-## API Overview
+
+## API Overview 🧭
 
 `bdir(param)` accepts a `Record<string | number, string | number>` with the constraints described above and returns an object with the following surface:
 
@@ -83,8 +91,10 @@ Forward keys must map to numeric values, and every numeric value that needs a cu
 - `isLabel(arg: unknown): arg is string`
 
 All helpers use internal `Set` instances for O(1) checks.
+<br/>
 
-## Utility Types
+
+## Utility Types 🧰
 
 - `Bdir<T>` – given the return type of `bdir`, produces the union of forward numeric values (e.g. `0 | 1 | 2`).
 - `BdirKeys<T>` – given the return type of `bdir`, produces the union of forward keys (e.g. `'None' | 'User' | 'Admin'`).
@@ -103,8 +113,10 @@ const Roles = bdir({
 type RoleValues = Bdir<typeof Roles> // 0 | 1 | 2
 type RoleKeys = BdirKeys<typeof Roles> // "None" | "User" | "Admin"
 ```
+<br/>
 
-## Constraints & Validation Rules
+
+## Constraints & Validation Rules ✅
 
 - Forward keys **must** be non-numeric strings; forward values **must** be finite numbers.
 - Reverse keys **must** be numeric (as string literals or numbers) and map to string labels.
@@ -113,11 +125,15 @@ type RoleKeys = BdirKeys<typeof Roles> // "None" | "User" | "Admin"
 - Because forward keys become object properties, avoid using keys reserved by the runtime (`Labels`, `render`, etc.).
 
 Violations trigger descriptive runtime errors (see `test/index.test.ts` for coverage) so mistakes are caught during initialization.
+<br/>
 
-## Testing
+
+## Testing 🧪 
 
 The repository uses [Vitest](https://vitest.dev/) for runtime verification. Run `npm test` to execute the suite, which exercises every helper and guard demonstrated above.
+<br/>
 
-## License
+
+## License 📄
 
 MIT © [seanpmaxwell1](LICENSE)
