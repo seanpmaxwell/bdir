@@ -9,7 +9,7 @@
 `bdir` is a lightweight utility for building bi-directional lookup tables with first-class TypeScript support. It lets you declare the complete forward direction (keys → values) just once, and automatically keeps reverse lookups (values → labels), runtime validation helpers, and strongly-typed unions in sync.
 
 The package ships ESM + CJS bundles, fully typed declarations, and zero dependencies.
-<br/>
+<br/><br/>
 
 
 ## Installation 📦
@@ -46,7 +46,7 @@ Roles.reverseIndex(2); // "Admin"
 ```
 
 Forward keys must map to numeric values, and every numeric value that needs a custom label can be declared again in the reverse direction. If a reverse entry is omitted, the forward key is used as the label.
-<br/>
+<br/><br/>
 
 
 ## Why bdir? 🤔
@@ -91,7 +91,7 @@ Forward keys must map to numeric values, and every numeric value that needs a cu
 - `isLabel(arg: unknown): arg is string`
 
 All helpers use internal `Set` instances for O(1) checks.
-<br/>
+<br/><br/>
 
 
 ## Utility Types 🧰
@@ -125,13 +125,13 @@ type RoleKeys = BdirKeys<typeof Roles> // "None" | "User" | "Admin"
 - Because forward keys become object properties, avoid using keys reserved by the runtime (`Labels`, `render`, etc.).
 
 Violations trigger descriptive runtime errors (see `test/index.test.ts` for coverage) so mistakes are caught during initialization.
-<br/>
+<br/><br/>
 
 
 ## Testing 🧪 
 
 The repository uses [Vitest](https://vitest.dev/) for runtime verification. Run `npm test` to execute the suite, which exercises every helper and guard demonstrated above.
-<br/>
+<br/><br/>
 
 
 ## License 📄
