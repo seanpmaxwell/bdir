@@ -37,7 +37,11 @@ const ERRORS = {
                                   Types
 ******************************************************************************/
 
-// **** Params **** //
+type CollapseType<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
+// -- Function Signature -- //
 
 type BasicBdir = Record<string | number, string | number>;
 
@@ -62,38 +66,81 @@ type BiDirParam<T extends object> =
 
 type AssertBdir<T extends object> = T & BiDirParam<T>;
 
-// *** Returned **** //
+// -- Resolve Labels -- //
+
+type GetLabelsMap<T> = {
+  [K in keyof ForwardOf<T> & string]: LabelFor<T, K>;
+};
+
+type LabelFor<T, K extends keyof ForwardOf<T>> =
+  Extract<T[Extract<keyof T, RevKey<ForwardOf<T>[K]>>], string> extends infer L
+    ? [L] extends [never]
+      ? K & string
+      : L
+    : never;
+
+type RevKey<V> = V extends number
+  ? V | `${V}`
+  : V extends `${number}`
+    ? V
+    : never;
 
 type ForwardOf<T> = {
   [K in keyof T as T[K] extends `${number}` | number ? K : never]: T[K];
 };
 
+type BdirLabels<T extends BasicBdir> = {
+  [K in keyof T]: T[K] extends number
+    ? // if there's a reverse entry at that number and it's a string, use it
+      Extract<T[T[K]], string> extends never
+      ? // otherwise fall back to the key name
+        K extends string
+        ? K
+        : `${K & number}`
+      : Extract<T[T[K]], string>
+    : never;
+}[keyof T];
+
+// -- Misc -- //
+
 type BdirKeys<T> = {
   [K in keyof T]: K extends `${number}` | number ? never : K;
 }[keyof T];
 
-type BdirValues<T> = T[BdirKeys<T>];
+type BdirValues<T> = Extract<T[keyof T], number>;
 
-type LabelsOf<T> = {
-  [K in keyof ForwardOf<T>]: string;
-};
-
-type GetRawValue<T> = {
-  [K in keyof T]: T[K];
-} & {
-  [V in T[keyof T] & number as `${V}`]: string;
-};
+type GetRawValue<T extends BasicBdir> =
+  // keep existing object shape
+  T &
+    // add any missing reverse labels
+    {
+      [K in keyof ForwardOf<T> as ForwardOf<T>[K] extends number
+        ? ForwardOf<T>[K]
+        : never]: LabelFor<T, K>;
+    };
 
 type GetEntries<T> = Array<[BdirKeys<T>, BdirValues<T>]>;
 type GetOptions<T> = Array<[BdirValues<T>, string]>;
 
-// **** Public Utility Types **** //
+// -- Public Utility Types -- //
 
-export type PublicBdirValues<T extends { values: () => readonly unknown[] }> =
-  ReturnType<T['values']>[number];
+export type PublicBdirValues<T extends BdirRetVal> = ReturnType<
+  T['values']
+>[number];
 
-export type PublicBdirKeys<T extends { keys: () => readonly unknown[] }> =
-  ReturnType<T['keys']>[number];
+export type PublicBdirKeys<T extends BdirRetVal> = ReturnType<
+  T['keys']
+>[number];
+
+export type PublicBdirLabels<T extends BdirRetVal> = ReturnType<
+  T['labels']
+>[number];
+
+interface BdirRetVal {
+  values: () => number[];
+  keys: () => string[];
+  labels: () => string[];
+}
 
 /******************************************************************************
                               Functions
@@ -106,28 +153,28 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
   type Forward = ForwardOf<T>;
   type Key = BdirKeys<T>;
   type Value = BdirValues<T>;
-  type RawValue = GetRawValue<T>;
-  type LabelsMap = LabelsOf<T>;
+  type Label = BdirLabels<T>;
   type Entries = GetEntries<T>;
   type Options = GetOptions<T>;
+  type LabelMap = CollapseType<GetLabelsMap<T>>;
 
-  // Split forward/reverse
+  // ** Split forward/reverse ** //
   const { forward, reverse, entries, valueKeyMap, keysArray, valuesArray } =
     splitDirections(param);
 
-  // Initialize labels
-  const labelsArray: string[] = [],
+  // ** Initialize labels ** //
+  const labelsArray: Label[] = [],
     valueLabelMap = new Map<number, string>(),
     options: (string | number)[][] = [];
   for (let i = 0; i < valuesArray.length; i++) {
     const value = valuesArray[i],
       label = reverse[value] ?? keysArray[i];
-    labelsArray.push(label);
+    labelsArray.push(label as Label);
     valueLabelMap.set(value, label);
     options.push([value, label]);
   }
 
-  // Initialze the ".raw" and ".Labels" objects
+  // ** Initialze the ".raw" and ".Labels" objects ** //
   const rawValue: Record<string, string | number> = {},
     labelsMap: Record<string, string> = {},
     labelSet = new Set<string>();
@@ -141,18 +188,15 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
     labelSet.add(label);
   }
 
-  // Validator functions
-  const isKey = (arg: unknown): arg is Key => {
-      return typeof arg === 'string' && arg in forward;
-    },
-    isValue = (arg: unknown): arg is Value => {
-      return typeof arg === 'number' && valueKeyMap.has(arg);
-    },
-    isLabel = (arg: unknown): arg is string => {
-      return typeof arg === 'string' && labelSet.has(arg);
-    };
+  // ** Validator functions ** //
+  const isKey = (arg: unknown): arg is Key =>
+    typeof arg === 'string' && arg in forward;
+  const isValue = (arg: unknown): arg is Value =>
+    typeof arg === 'number' && valueKeyMap.has(arg);
+  const isLabel = (arg: unknown): arg is Label =>
+    typeof arg === 'string' && labelSet.has(arg);
 
-  // Lookup functions
+  // ** Lookup functions ** //
   const render = (value: unknown): string => {
       if (!isValue(value)) return '';
       return valueLabelMap.get(value as number) ?? '';
@@ -173,15 +217,15 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
   // Return
   return {
     ...(forward as Forward),
-    Labels: labelsMap as LabelsMap,
+    _labels: labelsMap as LabelMap,
     render,
     renderByKey,
     index,
     reverseIndex,
-    raw: () => ({ ...rawValue }) as RawValue,
+    raw: () => ({ ...rawValue }) as CollapseType<GetRawValue<T>>,
     keys: () => [...keysArray] as Array<keyof Forward>,
     values: () => [...valuesArray] as Value[],
-    labels: () => [...labelsArray] as string[],
+    labels: () => [...labelsArray] as Array<LabelMap[keyof LabelMap]>,
     entries: () => clone2D(entries) as Entries,
     options: () => clone2D(options) as Options,
     isKey,

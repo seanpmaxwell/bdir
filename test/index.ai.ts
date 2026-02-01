@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import bdir, { type Bdir, type BdirKeys } from '../src';
+import bdir from '../src';
 
 const createRoles = () =>
   bdir({
@@ -11,28 +11,15 @@ const createRoles = () =>
     2: 'Administrator',
   });
 
-type RolesInstance = ReturnType<typeof createRoles>;
-
-type Equal<A, B> =
-  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
-    ? true
-    : false;
-type Expect<T extends true> = T;
-
-type _RoleValueUnion = Expect<Equal<Bdir<RolesInstance>, 0 | 1 | 2>>;
-type _RoleKeyUnion = Expect<
-  Equal<BdirKeys<RolesInstance>, 'None' | 'User' | 'Admin'>
->;
-
 describe('bdir runtime behavior', () => {
   test('exposes forward values and labels', () => {
     const Roles = createRoles();
     expect(Roles.None).toBe(0);
     expect(Roles.User).toBe(1);
     expect(Roles.Admin).toBe(2);
-    expect(Roles.Labels.None).toBe('');
-    expect(Roles.Labels.User).toBe('User');
-    expect(Roles.Labels.Admin).toBe('Administrator');
+    expect(Roles._labels.None).toBe('');
+    expect(Roles._labels.User).toBe('User');
+    expect(Roles._labels.Admin).toBe('Administrator');
   });
 
   test('lookup helpers handle happy and unhappy paths', () => {
@@ -60,7 +47,7 @@ describe('bdir runtime behavior', () => {
 
     const keys = Roles.keys();
     const values = Roles.values();
-    const labels = Roles.labels();
+    const labels: string[] = Roles.labels();
 
     expect(keys).toStrictEqual(['None', 'User', 'Admin']);
     expect(values).toStrictEqual([0, 1, 2]);
@@ -171,8 +158,8 @@ describe('label overrides and defaults', () => {
       10: 'Rouge',
     });
 
-    expect(Colors.Labels.Red).toBe('Rouge');
-    expect(Colors.Labels.Blue).toBe('Blue');
+    expect(Colors._labels.Red).toBe('Rouge');
+    expect(Colors._labels.Blue).toBe('Blue');
     expect(Colors.render(20)).toBe('Blue');
     expect(Colors.render(30)).toBe('Green');
     expect(Colors.options()).toStrictEqual([

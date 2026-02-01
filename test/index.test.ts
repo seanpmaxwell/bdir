@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import bdir, { type Bdir, type BdirKeys } from '../src';
+import bdir, { type Bdir, type BdirKeys, type BdirLabels } from '../src';
 
 // ** List of APIs ** //
 
@@ -20,9 +20,9 @@ test('basic runtime validation', () => {
   // expect(Roles.Administrator).toBe(2); // type error
 
   // Test .Labels
-  expect(Roles.Labels.None).toBe('');
-  expect(Roles.Labels.User).toBe('User');
-  expect(Roles.Labels.Admin).toBe('Administrator');
+  expect(Roles._labels.None).toBe('');
+  expect(Roles._labels.User).toBe('User');
+  expect(Roles._labels.Admin).toBe('Administrator');
   // expect(Roles.Labels.Administrator).toBe('Administrator'); //type error
 
   // Test .render()
@@ -199,10 +199,17 @@ test.skip('misc type-checking', () => {
     None: 0,
     User: 1,
     Admin: 2,
+    UserDup: 3,
     0: '',
     2: 'Administrator',
+    3: 'User',
   });
 
   type Values = Bdir<typeof Roles2>;
   type Keys = BdirKeys<typeof Roles2>;
+  type Labels = BdirLabels<typeof Roles2>;
+  const labelsObj = Roles2._labels;
+  const keysArr = Roles2.keys();
+  const labels = Roles2.labels();
+  const raw = Roles2.raw();
 });
