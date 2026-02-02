@@ -42,6 +42,28 @@ describe('bdir runtime behavior', () => {
     expect(Roles.reverseIndex(Number.NaN)).toBe('');
   });
 
+  test('orThrow helpers return strict values and throw on invalid input', () => {
+    const Roles = createRoles();
+
+    expect(Roles.renderOrThrow(1)).toBe('User');
+    expect(Roles.renderByKeyOrThrow('Admin')).toBe('Administrator');
+    expect(Roles.indexOrThrow('User')).toBe(1);
+    expect(Roles.reverseIndexOrThrow(2)).toBe('Admin');
+
+    expect(() => Roles.renderOrThrow(999)).toThrowError(
+      'non-value passed to renderOrThrow',
+    );
+    expect(() => Roles.renderByKeyOrThrow('Ghost')).toThrowError(
+      'non-key passed to renderByKeyOrThrow',
+    );
+    expect(() => Roles.indexOrThrow('Ghost')).toThrowError(
+      'non-key passed to indexOrThrow',
+    );
+    expect(() => Roles.reverseIndexOrThrow(999)).toThrowError(
+      'non-value passed to reverseIndexOrThrow',
+    );
+  });
+
   test('collection getters return defensive copies', () => {
     const Roles = createRoles();
 

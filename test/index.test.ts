@@ -183,6 +183,16 @@ test('test for thrown errors', () => {
     'bdir(): all reverse keys must be mentioned in the forward direction: ' +
       `invalid reverse key: "3"`,
   );
+
+  const Roles2 = bdir({
+    None: 0,
+    User: 1,
+    Admin: 2,
+  });
+
+  expect(() => Roles2.renderOrThrow('Foo')).toThrowError(
+    'non-value passed to renderOrThrow',
+  );
 });
 
 test.skip('misc type-checking', () => {
