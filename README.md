@@ -70,17 +70,24 @@ Forward keys must map to numeric values, and every numeric value that needs a cu
 
 ### Lookup Helpers
 
-- `render(value: unknown): string` – label for a numeric value; empty string when missing.
-- `renderByKey(key: unknown): string` – label derived from the key; empty string when missing.
-- `index(key: unknown): number | -1` – numeric value for a key; `-1` when missing.
-- `reverseIndex(value: unknown): string` – forward key for a value; empty string when missing.
+- `render(value: unknown): union of labels` – get the label for a forward value; empty string when missing.
+- `renderByKey(key: unknown): union of labels` – get label for a forward key; empty string when missing.
+- `index(key: unknown): number | -1` – get the forward value for a key; `-1` when missing.
+- `reverseIndex(value: unknown): string` – get forward key for a value; empty string when missing.
+
+Every lookup helper contains an `orThrow` counter-part function which removes the empty-string/`-1` fillers and throws an error if the key/values was not found.
+
+```ts
+Roles.index(unknown);  // 0 | 1 | 2 | -1
+Roles.indexOrThrow(unknown); // 0 | 1 | 2
+```
 
 ### Collections
 All properties are functions which return fully typesafe values.
 
 - `.raw` – shallow copy of the interleaved map.
 - `.keys` – all forward keys.
-- `.values` – all numeric values.
+- `.values` – all values.
 - `.labels` – label strings in insertion order.
 - `.entries` – 2D array of forward pairs.
 - `.options` – useful for rendering dropdown selectors in the front-end.
@@ -97,7 +104,7 @@ All helpers use internal `Set` instances for O(1) checks.
 
 ## 🧰 Utility Types
 
-- `Bdir<T>` – union of forward numeric values (e.g. `0 | 1 | 2`).
+- `Bdir<T>` – union of forward values (e.g. `0 | 1 | 2`).
 - `BdirKeys<T>` – union of forward keys (e.g. `'None' | 'User' | 'Admin'`).
 - `BdirLabels<T>` - union of the labels including auto-generated ones (e.g. `'' | 'User' | 'Adminstator'`).
 

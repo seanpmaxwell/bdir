@@ -212,4 +212,7 @@ test.skip('misc type-checking', () => {
   const keysArr = Roles2.keys();
   const labels = Roles2.labels();
   const raw = Roles2.raw();
+  const label = Roles2.render('blah');
+  const value = Roles2.index('None');
+  const label2 = Roles2.indexOrThrow('foo');
 });

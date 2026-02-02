@@ -89,18 +89,6 @@ type ForwardOf<T> = {
   [K in keyof T as T[K] extends `${number}` | number ? K : never]: T[K];
 };
 
-type BdirLabels<T extends BasicBdir> = {
-  [K in keyof T]: T[K] extends number
-    ? // if there's a reverse entry at that number and it's a string, use it
-      Extract<T[T[K]], string> extends never
-      ? // otherwise fall back to the key name
-        K extends string
-        ? K
-        : `${K & number}`
-      : Extract<T[T[K]], string>
-    : never;
-}[keyof T];
-
 // -- Misc -- //
 
 type BdirKeys<T> = {
@@ -153,28 +141,28 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
   type Forward = ForwardOf<T>;
   type Key = BdirKeys<T>;
   type Value = BdirValues<T>;
-  type Label = BdirLabels<T>;
   type Entries = GetEntries<T>;
   type Options = GetOptions<T>;
   type LabelMap = CollapseType<GetLabelsMap<T>>;
+  type Label = LabelMap[keyof LabelMap];
 
   // ** Split forward/reverse ** //
   const { forward, reverse, entries, valueKeyMap, keysArray, valuesArray } =
     splitDirections(param);
 
   // ** Initialize labels ** //
-  const labelsArray: Label[] = [],
+  const labelsArray: string[] = [],
     valueLabelMap = new Map<number, string>(),
     options: (string | number)[][] = [];
   for (let i = 0; i < valuesArray.length; i++) {
     const value = valuesArray[i],
       label = reverse[value] ?? keysArray[i];
-    labelsArray.push(label as Label);
+    labelsArray.push(label);
     valueLabelMap.set(value, label);
     options.push([value, label]);
   }
 
-  // ** Initialze the ".raw" and ".Labels" objects ** //
+  // ** Initialze the .raw and ._labels objects ** //
   const rawValue: Record<string, string | number> = {},
     labelsMap: Record<string, string> = {},
     labelSet = new Set<string>();
@@ -196,22 +184,54 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
   const isLabel = (arg: unknown): arg is Label =>
     typeof arg === 'string' && labelSet.has(arg);
 
-  // ** Lookup functions ** //
-  const render = (value: unknown): string => {
+  // ** .render ** //
+  const render = (value: unknown): LabelMap[keyof LabelMap] | '' => {
       if (!isValue(value)) return '';
-      return valueLabelMap.get(value as number) ?? '';
+      return (valueLabelMap.get(value as number) ?? '') as Label;
     },
-    index = (key: unknown): Value | -1 => {
+    renderOrThrow = (value: unknown): LabelMap[keyof LabelMap] => {
+      if (!isValue(value)) {
+        throw new Error('non-value passed to renderOrThrow');
+      }
+      return valueLabelMap.get(value as number) as Label;
+    };
+
+  // ** .index ** //
+  const index = (key: unknown): Value | -1 => {
       if (!isKey(key)) return -1;
       return forward[key as string] as Value;
     },
-    renderByKey = (key: unknown): string => {
+    indexOrThrow = (key: unknown): Value => {
+      if (!isKey(key)) {
+        throw new Error('non-key passed to indexOrThrow');
+      }
+      return forward[key as string] as Value;
+    };
+
+  // ** .renderByKey ** //
+  const renderByKey = (key: unknown): LabelMap[keyof LabelMap] | '' => {
       if (!isKey(key)) return '';
-      return valueLabelMap.get(forward[key as string] as number) ?? '';
+      const val = forward[key as string] as number;
+      return (valueLabelMap.get(val) ?? '') as Label;
     },
-    reverseIndex = (value: unknown): string => {
+    renderByKeyOrThrow = (key: unknown): LabelMap[keyof LabelMap] => {
+      if (!isKey(key)) {
+        throw new Error('non-key passed to renderByKeyOrThrow');
+      }
+      const val = forward[key as string] as number;
+      return valueLabelMap.get(val) as Label;
+    };
+
+  // ** .reverseIndex ** //
+  const reverseIndex = (value: unknown): keyof Forward | '' => {
       if (!isValue(value)) return '';
-      return valueKeyMap.get(value as number) ?? '';
+      return (valueKeyMap.get(value as number) ?? '') as keyof Forward;
+    },
+    reverseIndexOrThrow = (value: unknown): keyof Forward => {
+      if (!isValue(value)) {
+        throw new Error('non-value passed to reverseIndexOrThrow');
+      }
+      return (valueKeyMap.get(value as number) ?? '') as keyof Forward;
     };
 
   // Return
@@ -219,9 +239,13 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
     ...(forward as Forward),
     _labels: labelsMap as LabelMap,
     render,
+    renderOrThrow,
     renderByKey,
+    renderByKeyOrThrow,
     index,
+    indexOrThrow,
     reverseIndex,
+    reverseIndexOrThrow,
     raw: () => ({ ...rawValue }) as CollapseType<GetRawValue<T>>,
     keys: () => [...keysArray] as Array<keyof Forward>,
     values: () => [...valuesArray] as Value[],
