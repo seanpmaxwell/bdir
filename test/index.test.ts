@@ -49,6 +49,14 @@ test('basic runtime validation', () => {
   expect(Roles.reverseIndex(2)).toBe('Admin');
   expect(Roles.reverseIndex(1000)).toBe('');
 
+  // Test .indexByLabel()
+  expect(Roles.indexByLabel('User')).toBe(1);
+  expect(Roles.indexByLabel('user', true)).toBe(1); // Ignore case
+  expect(Roles.indexByLabel('Administrator')).toBe(2);
+  expect(Roles.indexByLabel('admin')).toBe(-1);
+  expect(Roles.indexByLabel('')).toBe(0);
+  expect(Roles.indexByLabel('foo')).toBe(-1);
+
   // Test .raw()
   expect(Roles.raw()).toStrictEqual({
     None: 0,
@@ -191,7 +199,7 @@ test('test for thrown errors', () => {
   });
 
   expect(() => Roles2.renderOrThrow('Foo')).toThrowError(
-    'non-value passed to renderOrThrow',
+    'non-value passed to .renderOrThrow',
   );
 });
 
@@ -225,4 +233,5 @@ test.skip('misc type-checking', () => {
   const label = Roles2.render('blah');
   const value = Roles2.index('None');
   const label2 = Roles2.indexOrThrow('foo');
+  const value2 = Roles2.indexByLabelOrThrow('foo');
 });

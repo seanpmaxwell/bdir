@@ -61,21 +61,32 @@ Forward keys must map to numeric values, and every numeric value that needs a cu
 
 ## 🧭 API Overview
 
-`bdir(param)` accepts a `Record<string | number, string | number>` with the constraints described above and returns an object with the following surface:
+`bdir(param)` accepts a `Record<string | number, string | number>` with the constraints described above and returns an object with the following features:
+
+### First some terminology
+- **keys**: forward keys
+- **values**: forward values AND reverse keys
+- **labels**: reverse keys
 
 ### Forward Accessors
 
-- `Roles.None`, `Roles.User`, etc. → direct access to numeric values.
+- `Roles.None`, `Roles.User`, etc. → direct access to values.
 - `Roles._labels."Key name"` → label for the key (falls back to the key text when no explicit reverse entry exists).
 
 ### Lookup Helpers
 
-- `render(value: unknown): union of labels` – get the label for a forward value; empty string when missing.
-- `renderByKey(key: unknown): union of labels` – get label for a forward key; empty string when missing.
-- `index(key: unknown): number | -1` – get the forward value for a key; `-1` when missing.
-- `reverseIndex(value: unknown): string` – get forward key for a value; empty string when missing.
+- `render(value: unknown): union of labels` – get **label** by **value**; empty string when missing.
+- `renderByKey(key: unknown): union of labels` – get **label** by **key**; empty string when missing.
+- `index(key: unknown): union of values | -1` – get **value** by **key**; `-1` when missing.
+- `reverseIndex(value: unknown): string` – get **key** by **value**; empty string when missing.
 
-Every lookup helper contains an `orThrow` counter-part function which removes the empty-string/`-1` fillers and throws an error if the key/values was not found.
+⚠️ **WARNING** because **label** uniqueness is not enforced, the following helpers do not guarantee the correct return. Only use these if you are certain every label in your table is unique.
+- `indexByLabel(label: unknown, ignoreCase?: boolean): union of values | -1` - get **value** by **label**.
+- `reverseIndexByLabel(label: unknown, ignoreCase?: boolean): union of value | -1` - get **key** by **label**.
+
+#### Lookup Helper Extras
+- Every lookup helper contains an `orThrow` counterpart function which removes the empty-string/`-1` fillers and throws an error if the key/value/label searched for was not found.
+- Every variation of `indexByLabel` (including the `orThrow`'s) has an optional `ingoreCase` parameter which will ingore the case when getting a key/value by a label.
 
 ```ts
 Roles.index(unknown);  // 0 | 1 | 2 | -1

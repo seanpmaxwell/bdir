@@ -51,16 +51,60 @@ describe('bdir runtime behavior', () => {
     expect(Roles.reverseIndexOrThrow(2)).toBe('Admin');
 
     expect(() => Roles.renderOrThrow(999)).toThrowError(
-      'non-value passed to renderOrThrow',
+      'non-value passed to .renderOrThrow',
     );
     expect(() => Roles.renderByKeyOrThrow('Ghost')).toThrowError(
-      'non-key passed to renderByKeyOrThrow',
+      'non-key passed to .renderByKeyOrThrow',
     );
     expect(() => Roles.indexOrThrow('Ghost')).toThrowError(
-      'non-key passed to indexOrThrow',
+      'non-key passed to .indexOrThrow',
     );
     expect(() => Roles.reverseIndexOrThrow(999)).toThrowError(
-      'non-value passed to reverseIndexOrThrow',
+      'non-value passed to .reverseIndexOrThrow',
+    );
+  });
+
+  test('label lookup helpers support value/key lookup by label', () => {
+    const Roles = createRoles();
+
+    expect(Roles.indexByLabel('')).toBe(0);
+    expect(Roles.indexByLabel('User')).toBe(1);
+    expect(Roles.indexByLabel('Administrator')).toBe(2);
+    expect(Roles.indexByLabel('admin')).toBe(-1);
+    expect(Roles.indexByLabel('user', true)).toBe(1);
+    expect(Roles.indexByLabel('administrator', true)).toBe(2);
+    expect(Roles.indexByLabel('ADMIN', true)).toBe(-1);
+    expect(Roles.indexByLabel('Missing')).toBe(-1);
+
+    expect(Roles.reverseIndexByLabel('')).toBe('None');
+    expect(Roles.reverseIndexByLabel('User')).toBe('User');
+    expect(Roles.reverseIndexByLabel('Administrator')).toBe('Admin');
+    expect(Roles.reverseIndexByLabel('admin')).toBe('');
+    expect(Roles.reverseIndexByLabel('user', true)).toBe('User');
+    expect(Roles.reverseIndexByLabel('administrator', true)).toBe('Admin');
+    expect(Roles.reverseIndexByLabel('ADMIN', true)).toBe('');
+    expect(Roles.reverseIndexByLabel('Missing')).toBe('');
+  });
+
+  test('label lookup orThrow helpers support ignoreCase and throw on invalid labels', () => {
+    const Roles = createRoles();
+
+    expect(Roles.indexByLabelOrThrow('User')).toBe(1);
+    expect(Roles.indexByLabelOrThrow('administrator', true)).toBe(2);
+    expect(Roles.reverseIndexByLabelOrThrow('Administrator')).toBe('Admin');
+    expect(Roles.reverseIndexByLabelOrThrow('user', true)).toBe('User');
+
+    expect(() => Roles.indexByLabelOrThrow('Missing')).toThrowError(
+      'non-label passed to .indexByLabelOrThrow',
+    );
+    expect(() => Roles.indexByLabelOrThrow('ADMIN', true)).toThrowError(
+      'non-label passed to .indexByLabelOrThrow',
+    );
+    expect(() => Roles.reverseIndexByLabelOrThrow('Missing')).toThrowError(
+      'non-label passed to .reverseIndexByLabelOrThrow',
+    );
+    expect(() => Roles.reverseIndexByLabelOrThrow('ADMIN', true)).toThrowError(
+      'non-label passed to .reverseIndexByLabelOrThrow',
     );
   });
 
