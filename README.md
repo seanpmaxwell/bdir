@@ -101,7 +101,7 @@ All properties are functions which return fully typesafe values.
 - `.values` – all values.
 - `.labels` – label strings in insertion order.
 - `.entries` – 2D array of forward pairs.
-- `.options` – useful for rendering dropdown selectors in the front-end.
+- `.options` – [value, label][] 2D array, useful for rendering dropdown selectors in the front-end.
 
 ### Validator-functions
 
