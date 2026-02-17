@@ -66,13 +66,13 @@ Forward keys must map to numeric values, and every numeric value that needs a cu
 ### First some terminology
 
 - **keys**: forward keys
-- **values**: forward values AND reverse keys
-- **labels**: reverse keys
+- **values**: forward values (forward values are also the keys in reverse)
+- **labels**: reverse values
 
-### Forward Accessors
+### Value/Label Direct Accessors
 
-- `Roles.None`, `Roles.User`, etc. → direct access to values.
-- `Roles._"Key name"` → label for the key (falls back to the key text when no explicit reverse entry exists).
+- `Roles.None`, `Roles.User`, etc. → access values.
+- `Roles._"Key name"` → label for the key (label is the key's text when no explicit reverse entry was provided).
 
 ### Lookup Helpers
 
@@ -89,7 +89,7 @@ Forward keys must map to numeric values, and every numeric value that needs a cu
 #### Lookup Helper Extras
 
 - Every lookup helper contains an `orThrow` counterpart function which removes the empty-string/`-1` fillers and throws an error if the key/value/label searched for was not found.
-- Every variation of `indexByLabel` (including the `orThrow`'s) has an optional `ingoreCase` parameter which will ingore the case when getting a key/value by a label.
+- Every variation of `indexByLabel` (including the `orThrow`'s) has an optional `ignoreCase` parameter which will ignore the case when getting a key/value by a label.
 
 ```ts
 Roles.index(unknown); // 0 | 1 | 2 | -1
@@ -104,14 +104,14 @@ All properties are functions which return fully typesafe values.
 - `.keys` – all forward keys.
 - `.values` – all values.
 - `.labels` – label strings in insertion order.
-- `.entries` – 2D array of forward pairs.
+- `.entries` – [key, value][] 2D array,.
 - `.options` – [value, label][] 2D array, useful for rendering dropdown selectors in the front-end.
 
 ### Validator-functions
 
 - `.isKey` - is forward key
-- `.isValue` - is foward value
-- `.isLabel` - is label (includes auto-generated values)
+- `.isValue` - is forward value
+- `.isLabel` - is label (includes auto-generated labels)
 
 All helpers use internal `Set` instances for O(1) checks.
 
@@ -149,7 +149,7 @@ type RoleLabels = BdirLabels<typeof Roles>; // "" | "User" | "Administrator"
 - Every reverse key **must** already exist as a forward value; referencing unknown values throws.
 - Because forward keys become object properties, avoid using keys reserved by the runtime (`labels`, `render`, etc.).
 
-Violations trigger descriptive runtime errors (see `test/index.test.ts` for coverage) so mistakes are caught during initialization.
+Violations trigger runtime errors (see `test/index.test.ts` for coverage) so mistakes are caught during initialization.
 
 <br/><b>\*\*\*</b><br/>
 
