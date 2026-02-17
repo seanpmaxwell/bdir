@@ -1,4 +1,4 @@
-import { Errors } from './constants';
+import { Errors } from './constants.js';
 import type {
   AssertBdir,
   BasicBdir,
@@ -10,7 +10,7 @@ import type {
   GetLabelsObject,
   GetOptions,
   GetRawValue,
-} from './utility-types';
+} from './utility-types.js';
 
 /******************************************************************************
                                   Types
