@@ -1,37 +1,16 @@
-/******************************************************************************
-                                 Constants
-******************************************************************************/
-
-const ERRORS = {
-  ForwardKeyNumeric(key: string) {
-    return `bdir(): forward key "${key}" must not be numeric`;
-  },
-  ValueNotNumber(key: string, value: number) {
-    return `bdir(): value must be a finite number: [key: "${key}", value: "${value}"]`;
-  },
-  DuplicateValue(key: string, value: number) {
-    return `bdir(): duplicate value detected: [key: "${key}", value: "${value}"]`;
-  },
-  LabelNotString(value: string, label: unknown) {
-    return (
-      'bdir(): label for value must be a string: ' +
-      `[value: "${value}", label: "${String(label)}"]`
-    );
-  },
-  InvalidEntry(key: string, value: unknown) {
-    return (
-      `bdir(): invalid entry ["${key}": "${String(value)}"] — forward keys ` +
-      'must be non-numeric strings, forward values must be numbers, reverse ' +
-      'reverse keys must be numeric'
-    );
-  },
-  ReverseWithoutForward(value: number) {
-    return (
-      'bdir(): all reverse keys must be mentioned in the forward ' +
-      `direction: invalid reverse key: "${String(value)}"`
-    );
-  },
-} as const;
+import { Errors } from './constants';
+import type {
+  AssertBdir,
+  BasicBdir,
+  BdirKeys,
+  BdirValues,
+  ForwardOf,
+  GetEntries,
+  GetLabelsMap,
+  GetLabelsObject,
+  GetOptions,
+  GetRawValue,
+} from './utility-types';
 
 /******************************************************************************
                                   Types
@@ -40,75 +19,6 @@ const ERRORS = {
 type CollapseType<T> = {
   [K in keyof T]: T[K];
 } & {};
-
-// -- Function Signature -- //
-
-type BasicBdir = Record<string | number, string | number>;
-
-type IsNumericKey<K> = K extends number
-  ? true
-  : K extends `${number}`
-    ? true
-    : false;
-
-type InvalidBiDirKeys<T extends object> = {
-  [K in keyof T]: IsNumericKey<K> extends true
-    ? T[K] extends string
-      ? never
-      : K // reverse: numeric key -> string value
-    : T[K] extends number
-      ? never
-      : K; // forward: string key  -> number value
-}[keyof T];
-
-type BiDirParam<T extends object> =
-  InvalidBiDirKeys<T> extends never ? T : never;
-
-type AssertBdir<T extends object> = T & BiDirParam<T>;
-
-// -- Resolve Labels -- //
-
-type GetLabelsMap<T> = {
-  [K in keyof ForwardOf<T> & string]: LabelFor<T, K>;
-};
-
-type LabelFor<T, K extends keyof ForwardOf<T>> =
-  Extract<T[Extract<keyof T, RevKey<ForwardOf<T>[K]>>], string> extends infer L
-    ? [L] extends [never]
-      ? K & string
-      : L
-    : never;
-
-type RevKey<V> = V extends number
-  ? V | `${V}`
-  : V extends `${number}`
-    ? V
-    : never;
-
-type ForwardOf<T> = {
-  [K in keyof T as T[K] extends `${number}` | number ? K : never]: T[K];
-};
-
-// -- Misc -- //
-
-type BdirKeys<T> = {
-  [K in keyof T]: K extends `${number}` | number ? never : K;
-}[keyof T];
-
-type BdirValues<T> = Extract<T[keyof T], number>;
-
-type GetRawValue<T extends BasicBdir> =
-  // keep existing object shape
-  T &
-    // add any missing reverse labels
-    {
-      [K in keyof ForwardOf<T> as ForwardOf<T>[K] extends number
-        ? ForwardOf<T>[K]
-        : never]: LabelFor<T, K>;
-    };
-
-type GetEntries<T> = Array<[BdirKeys<T>, BdirValues<T>]>;
-type GetOptions<T> = Array<[BdirValues<T>, string]>;
 
 // -- Public Utility Types -- //
 
@@ -162,7 +72,7 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
     options.push([value, label]);
   }
 
-  // ** Initialze the .raw and ._labels objects ** //
+  // ** Initialze the .raw and "labels" objects ** //
   const rawValue: Record<string, string | number> = {},
     keyLabelMap: Record<string, string> = {},
     labelMap = new Map<string, { key: string; value: number }>(),
@@ -173,7 +83,7 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
       label = labelsArray[i];
     rawValue[key] = value;
     rawValue[value] = label;
-    keyLabelMap[key] = label;
+    keyLabelMap['_' + key] = label;
     labelMap.set(label, { key, value });
     labelMapIngoreCase.set(label.toLowerCase(), { key, value });
   }
@@ -282,7 +192,7 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
   // Return
   return {
     ...(forward as Forward),
-    _labels: keyLabelMap as LabelMap,
+    ...(keyLabelMap as GetLabelsObject<T>),
     render,
     renderOrThrow,
     renderByKey,
@@ -308,6 +218,9 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
 }
 
 /**
+ * @private
+ * @see bdir
+ *
  * Runtime check to make sure every value is unique
  */
 function splitDirections(param: BasicBdir) {
@@ -326,14 +239,14 @@ function splitDirections(param: BasicBdir) {
     // Forward direction
     if (typeof value === 'number') {
       if (isReverseKey) {
-        throw new Error(ERRORS.ForwardKeyNumeric(key));
+        throw new Error(Errors.ForwardKeyNumeric(key));
       }
       if (!Number.isFinite(value)) {
-        throw new Error(ERRORS.ValueNotNumber(key, value));
+        throw new Error(Errors.ValueNotNumber(key, value));
       }
       // Uniqueness check
       if (seenValues.has(value)) {
-        throw new Error(ERRORS.DuplicateValue(key, value));
+        throw new Error(Errors.DuplicateValue(key, value));
       }
       seenValues.add(value);
       forward[key] = value;
@@ -345,7 +258,7 @@ function splitDirections(param: BasicBdir) {
       // Reverse direction
     } else if (isReverseKey) {
       if (typeof value !== 'string') {
-        throw new Error(ERRORS.LabelNotString(key, value));
+        throw new Error(Errors.LabelNotString(key, value));
       }
       const valueAsKey = Number(key);
       reverse[valueAsKey] = value;
@@ -353,14 +266,14 @@ function splitDirections(param: BasicBdir) {
       continue;
     }
     // Invalid value
-    throw new Error(ERRORS.InvalidEntry(key, value));
+    throw new Error(Errors.InvalidEntry(key, value));
   }
 
   /* Make sure that all values used as keys in the reverse direction, were
     specified in the forward direction */
   for (const value of reverseKeys) {
     if (!seenValues.has(value)) {
-      throw new Error(ERRORS.ReverseWithoutForward(value));
+      throw new Error(Errors.ReverseWithoutForward(value));
     }
   }
 
