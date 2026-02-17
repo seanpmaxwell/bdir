@@ -19,11 +19,11 @@ test('basic runtime validation', () => {
   expect(Roles.Admin).toBe(2);
   // expect(Roles.Administrator).toBe(2); // type error
 
-  // Test .Labels
-  expect(Roles._labels.None).toBe('');
-  expect(Roles._labels.User).toBe('User');
-  expect(Roles._labels.Admin).toBe('Administrator');
-  // expect(Roles.Labels.Administrator).toBe('Administrator'); //type error
+  // Test underscore label accessors
+  expect(Roles._None).toBe('');
+  expect(Roles._User).toBe('User');
+  expect(Roles._Admin).toBe('Administrator');
+  expect((Roles as { _labels?: unknown })._labels).toBeUndefined();
 
   // Test .render()
   expect(Roles.render(0)).toBe('');
@@ -226,7 +226,6 @@ test.skip('misc type-checking', () => {
   type Values = Bdir<typeof Roles2>;
   type Keys = BdirKeys<typeof Roles2>;
   type Labels = BdirLabels<typeof Roles2>;
-  const labelsObj = Roles2._labels;
   const keysArr = Roles2.keys();
   const labels = Roles2.labels();
   const raw = Roles2.raw();

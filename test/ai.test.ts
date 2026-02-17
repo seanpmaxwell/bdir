@@ -17,9 +17,10 @@ describe('bdir runtime behavior', () => {
     expect(Roles.None).toBe(0);
     expect(Roles.User).toBe(1);
     expect(Roles.Admin).toBe(2);
-    expect(Roles._labels.None).toBe('');
-    expect(Roles._labels.User).toBe('User');
-    expect(Roles._labels.Admin).toBe('Administrator');
+    expect(Roles._None).toBe('');
+    expect(Roles._User).toBe('User');
+    expect(Roles._Admin).toBe('Administrator');
+    expect((Roles as { _labels?: unknown })._labels).toBeUndefined();
   });
 
   test('lookup helpers handle happy and unhappy paths', () => {
@@ -224,8 +225,8 @@ describe('label overrides and defaults', () => {
       10: 'Rouge',
     });
 
-    expect(Colors._labels.Red).toBe('Rouge');
-    expect(Colors._labels.Blue).toBe('Blue');
+    expect(Colors._Red).toBe('Rouge');
+    expect(Colors._Blue).toBe('Blue');
     expect(Colors.render(20)).toBe('Blue');
     expect(Colors.render(30)).toBe('Green');
     expect(Colors.options()).toStrictEqual([
