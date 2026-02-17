@@ -20,6 +20,7 @@ describe('bdir runtime behavior', () => {
     expect(Roles._None).toBe('');
     expect(Roles._User).toBe('User');
     expect(Roles._Admin).toBe('Administrator');
+    expect((Roles as { _labels?: unknown })._labels).toBeUndefined();
   });
 
   test('lookup helpers handle happy and unhappy paths', () => {

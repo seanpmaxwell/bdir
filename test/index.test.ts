@@ -19,11 +19,11 @@ test('basic runtime validation', () => {
   expect(Roles.Admin).toBe(2);
   // expect(Roles.Administrator).toBe(2); // type error
 
-  // Test .Labels
+  // Test underscore label accessors
   expect(Roles._None).toBe('');
   expect(Roles._User).toBe('User');
   expect(Roles._Admin).toBe('Administrator');
-  // expect(Roles.Labels.Administrator).toBe('Administrator'); //type error
+  expect((Roles as { _labels?: unknown })._labels).toBeUndefined();
 
   // Test .render()
   expect(Roles.render(0)).toBe('');
