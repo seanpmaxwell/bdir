@@ -58,7 +58,8 @@ test('basic runtime validation', () => {
   expect(Roles.indexByLabel('foo')).toBe(-1);
 
   // Test .raw()
-  expect(Roles.raw()).toStrictEqual({
+  const objStr = JSON.stringify(Roles);
+  expect(JSON.parse(objStr)).toStrictEqual({
     None: 0,
     User: 1,
     Admin: 2,
@@ -228,7 +229,7 @@ test.skip('misc type-checking', () => {
   type Labels = BdirLabels<typeof Roles2>;
   const keysArr = Roles2.keys();
   const labels = Roles2.labels();
-  const raw = Roles2.raw();
+  const raw = Roles2.toJSON();
   const label = Roles2.render('blah');
   const value = Roles2.index('None');
   const label2 = Roles2.indexOrThrow('foo');

@@ -179,7 +179,7 @@ describe('bdir runtime behavior', () => {
 
   test('raw snapshots are cloned and include auto-generated labels', () => {
     const Roles = createRoles();
-    const raw = Roles.raw();
+    const raw = Roles.toJSON();
 
     expect(raw).toStrictEqual({
       None: 0,
@@ -191,7 +191,7 @@ describe('bdir runtime behavior', () => {
     });
 
     (raw as Record<string, string | number>).None = 999;
-    expect(Roles.raw().None).toBe(0);
+    expect(Roles.toJSON().None).toBe(0);
   });
 
   test('type guards rely on precomputed sets', () => {

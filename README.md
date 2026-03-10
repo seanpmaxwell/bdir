@@ -51,11 +51,11 @@ Forward keys must map to numeric values, and every numeric value that needs a cu
 
 ## 🤔 Why bdir?
 
-- **Single source of truth** – define the forward direction once and bdir keeps every derived structure aligned.
-- **Union-friendly** – forward keys and values are promoted to compile-time unions for safe discriminated logic.
-- **Runtime helpers** – render, lookup, and validate dynamic inputs without reimplementing guard code.
+- **Single source of truth** – keep a list of values and their labels in a single object.
+- **Runtime helpers** – No need to implement your own functions for rendering labels and validating dynamic values.
 - **Typed labels** – `underscore + "Forward key name"` (i.e. `_Admin`) exposes readonly label strings tied to the forward keys.
 - **Safety built-in** – duplicate value detection, numeric-only guards, label string validation, and reverse-key checks happen during initialization.
+- **Serialization-friendly** – forward/reverse keys are combined into a single object during serialization.
 
 <br/><b>\*\*\*</b><br/>
 
@@ -100,7 +100,8 @@ Roles.indexOrThrow(unknown); // 0 | 1 | 2
 
 All properties are functions which return fully typesafe values.
 
-- `.raw` – shallow copy of the interleaved map.
+- `.toJSON` – shallow copy of the forward + full reverse keys.
+  - NOTE: this is what's called during serialization.
 - `.keys` – all forward keys.
 - `.values` – all values.
 - `.labels` – label strings in insertion order.
