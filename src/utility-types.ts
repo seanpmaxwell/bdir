@@ -60,7 +60,7 @@ export type GetLabelsMap<T> = {
 };
 
 export type GetLabelsObject<T> = {
-  [K in keyof ForwardOf<T> & string as `_${K}`]: LabelFor<T, K>;
+  readonly [K in keyof ForwardOf<T> & string as `_${K}`]: LabelFor<T, K>;
 };
 
 export type GetRawValue<T extends BasicBdir> =

@@ -216,7 +216,7 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
     isValue,
     isLabel: (arg: unknown): arg is Label => isLabel(arg, false),
     toJSON: () => ({ ...rawValueFinal }) as CollapseType<GetRawValue<T>>,
-  };
+  } as const;
 }
 
 /**
