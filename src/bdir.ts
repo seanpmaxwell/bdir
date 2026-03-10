@@ -22,19 +22,19 @@ type CollapseType<T> = {
 
 // -- Public Utility Types -- //
 
-export type PublicBdirValues<T extends BdirRetVal> = ReturnType<
+export type PublicBdirValues<T extends PartialRetVal> = ReturnType<
   T['values']
 >[number];
 
-export type PublicBdirKeys<T extends BdirRetVal> = ReturnType<
+export type PublicBdirKeys<T extends PartialRetVal> = ReturnType<
   T['keys']
 >[number];
 
-export type PublicBdirLabels<T extends BdirRetVal> = ReturnType<
+export type PublicBdirLabels<T extends PartialRetVal> = ReturnType<
   T['labels']
 >[number];
 
-interface BdirRetVal {
+interface PartialRetVal {
   values: () => number[];
   keys: () => string[];
   labels: () => string[];
@@ -87,6 +87,8 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
     labelMap.set(label, { key, value });
     labelMapIngoreCase.set(label.toLowerCase(), { key, value });
   }
+
+  const rawValueFinal = sortObjectStringKeysFirst(rawValue);
 
   // ** Validator functions ** //
   const isKey = (arg: unknown): arg is Key =>
@@ -191,8 +193,8 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
 
   // Return
   return {
-    ...(forward as Forward),
-    ...(keyLabelMap as GetLabelsObject<T>),
+    ...(forward as CollapseType<Forward>),
+    ...(keyLabelMap as CollapseType<GetLabelsObject<T>>),
     render,
     renderOrThrow,
     renderByKey,
@@ -205,7 +207,6 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
     indexByLabelOrThrow,
     reverseIndexByLabel,
     reverseIndexByLabelOrThrow,
-    raw: () => ({ ...rawValue }) as CollapseType<GetRawValue<T>>,
     keys: () => [...keysArray] as Array<keyof Forward>,
     values: () => [...valuesArray] as Value[],
     labels: () => [...labelsArray] as Array<LabelMap[keyof LabelMap]>,
@@ -214,6 +215,7 @@ function bdir<const T extends BasicBdir>(param: AssertBdir<T>) {
     isKey,
     isValue,
     isLabel: (arg: unknown): arg is Label => isLabel(arg, false),
+    toJSON: () => ({ ...rawValueFinal }) as CollapseType<GetRawValue<T>>,
   };
 }
 
@@ -289,18 +291,42 @@ function splitDirections(param: BasicBdir) {
 }
 
 /**
+ * @private
+ * @see splitDirections
+ * Clone a 2D array
+ */
+function clone2D(arr: (string | number)[][]) {
+  return arr.map(([a, b]) => [a, b]);
+}
+
+/**
+ * @private
+ * @see bdir
+ *
+ * For the raw value object make sure forward keys come first.
+ */
+function sortObjectStringKeysFirst<T extends Record<string, unknown>>(
+  obj: T,
+): T {
+  const entries = Object.entries(obj);
+  const sortedEntries = entries.sort(([a], [b]) => {
+    const aIsNumeric = isNumericKey(a),
+      bIsNumeric = isNumericKey(b);
+    if (aIsNumeric && !bIsNumeric) return 1;
+    if (!aIsNumeric && bIsNumeric) return -1;
+    return 0;
+  });
+  return Object.fromEntries(sortedEntries) as T;
+}
+
+/**
+ * @private
+ *
  * Check if a key can be converted to a string.
  */
 function isNumericKey(key: string): boolean {
   const numericKey = Number(key);
   return !Number.isNaN(numericKey) && String(numericKey) === key;
-}
-
-/**
- * Clone a 2D array
- */
-function clone2D(arr: (string | number)[][]) {
-  return arr.map(([a, b]) => [a, b]);
 }
 
 /******************************************************************************
